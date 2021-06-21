@@ -1,7 +1,6 @@
 ---
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
-$content-width: 70%;
 
 @import "{{ site.theme }}";
 
@@ -19,6 +18,8 @@ $content-width: 70%;
   font-style: italic;
   color: light-grey;
 }
+
+.post table { width: min-content; }
 
 .language-python { border-left: 1px solid lightcoral; }
 
