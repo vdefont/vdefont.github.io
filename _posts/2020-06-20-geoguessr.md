@@ -285,4 +285,53 @@ This time, it looks like the model is focusing on flat green fields with scatter
 
 ### Distribution of Dataset Across Countries
 
+The team at GeoGuessr provided us with a list of 100,000 locations, from which we created a dataset of 97,068 locations and images. To assess how uniformly these locations are distributed around the world, we examine the relationship between a country's population and the number of images from that country in our dataset:
+
+| Country | Population (millions) | Dataset Count | Pop per Datum (thousands) |
+|-|-|-|-|
+|United States|323.13|19007|17.0|
+|France|66.90|6117|10.9|
+|Russia|144.34|5399|26.7|
+|Japan|126.99|5161|24.6|
+|United Kingdom|65.64|4825|13.6|
+|Brazil|207.65|4442|46.7|
+|Canada|36.29|3624|10.0|
+|Mexico|127.54|3480|36.6|
+|Spain|46.44|3267|14.2|
+|Australia|24.13|3246|7.4|
+|South Africa|55.91|2437|22.9|
+|Italy|60.60|1947|31.1|
+|Norway|5.23|1897|2.8|
+|Poland|37.95|1732|21.9|
+|Finland|5.50|1723|3.2|
+|Sweden|9.90|1640|6.0|
+|Argentina|43.85|1538|28.5|
+|Thailand|68.86|1371|50.2|
+|Romania|19.71|1163|16.9|
+|New Zealand|4.69|1139|4.1|
+
+The "Pop Per Datum" column is a ratio computed as `(Country X population) / (number of dataset entries in Country X) * 1000`. A low number means that the country is overrepresented in the dataset, whereas a high number means that it is overrepresented. In general, this ratio is fairly consistent.
+
+There is some imbalance, but it generally reflects the amount of Street View coverage that exists in a given country. For example, countries like Brazil which have sparse Street View coverage are underrepresented in our dataset, whereas countries like Finland with comprehensive Street View coverage are overrepresented. We chose not to implement class weightings to fix this imbalance for two reasons: first, the imbalance is representative of the actual distribution of images one would see while playing GeoGuessr, and second, because the imbalance is generally not too severe.
+
 ### Geocell Classification Error Analysis
+
+Recall that our geocell prediction accuracy is as follows:
+
+| | Top-1 | Top-3 | Top-5 |
+|-|-|-|-|
+| Accuracy | 34.8% | 59.5% | 71.1% |
+
+Some geocells have much higher accuracy, such as this one in Paris, which has 74.4% accuracy:
+
+![](/images/gc_acc_paris.png)
+
+Other geocells have lower accuracy: many are even 0%. Let's examine one of these 0%-accuracy geocells. The yellow region corresponds to the actual geocell, and the darker regions correspond to the predicted geocells (across the validation and test sets):
+
+![](/images/gc_miss_ca.png)
+
+This geocell corresponds to central Californa. It is very small, only containing 28 elements across the validation and test sets. The model apparently decided to err in favor of the larger geocells encompassing San Francisco and Los Angeles. Let's examine another 0%-accuracy geocell:
+
+![](/images/gc_miss_poor_design.png)
+
+This geocell is also quite small, only containing 21 images in in the validation and test sets. As before, the model errs in favor of larger geocells. This geocell also straddles two countries separated by a large body of water. This not only makes it harder for the model to classify it correctly, but it also makes geolocation harder, as the two clusters in the geocell are quite far apart. A smarter geocell creation method may be able to mitigate both of the problems we've noted by creating equally-sized geocells (no small ones), and by not creating geocells that encompass different countries.
