@@ -112,20 +112,21 @@ We would like to do better. Some countries like the US are so large that predict
 
 To create the geocells, we start by defining the world as one big geocell. Then, we recursively split geocells in half while they contain at least 600 images. The splits are somewhat random, but they favor splitting along the longer edge, as well as ensuring that the two resulting geocells contain a similar number of examples. Finally, we discard geocells with less than 50 examples. The result is 275 geocells containing an average of 353 examples each:
 
-![][/images/gc_world.png]
+![](/images/gc_world.png)
 
 As expected, geocells are smaller in more densely populated areas. For example, there is one big green geocell that covers most of Mongolia, whereas there is a much higher density of geocells in Europe. As an extreme example, we examine the geocells in the vicinity of Paris, observing that the metropolitan area alone contains six geocells:
 
-![][/images/gc_paris.png]
+![](/images/gc_paris.png)
 
 As before, we fine-tune a resnet101 for the geocell prediction task. The geocell prediction accuracy is as follows:
 
 | | Top-1 | Top-3 | Top-5 |
+|-|-|-|-|
 | Accuracy | 34.8% | 59.5% | 71.1% |
 
 We can visualize the accuracy for each geocell, showing us which regions the model found it easier to classify. See the appendix for further error analysis.
 
-![][/images/gc_acc.png]
+![](/images/gc_acc.png)
 
 We can now predict an image's location by predicting its geocell, and using the geocell center as our guess. Like before, we compute the geocell center as the median latitude and longitude across all locations in our training set for that geocell. The results are as follows, including a comparison to our baseline country-center approach:
 
@@ -148,11 +149,12 @@ In addition to K and M, we must also choose the hyperparameter σ, corresponding
 
 Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not (given that one set of features is US-specific)? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
 
-![][/images/us_thresh.png]
+![](/images/us_thresh.png)
 
 We experimentally found that the optinmal KNN feature weightings were as follows (we tested in increments of 0.1):
 
 | | Country Logits | Geocell Logits | State Logits |
+|-|-|-|-|
 | US Images| 1.0 | 0.9 | 1.1 |
 | Non-US Images | 1.0 | 1.0 | 0.0 |
 
@@ -169,7 +171,118 @@ Our most important finding here was that we should not use the US state features
 
 The KNN method is a clear improvement. We also included results from varying σ: a smaller value corresponds to tighter gaussian filters, and thus a strongest preference for the closest neighbors. In the extreme, σ=0 corresponds to 1 Nearest-Neighbor. Observe the tradeoff between accuracies at different thresholds as we vary σ. At σ=0 the accuracy within 1km is an impressive 2.1%, while the accuracy for higher thresholds is relatively low (being outperformed by our baseline methods). As we increase σ, the accuracy at higher thresholds increases, whereas the accuracy at lower thresholds decreases. Intuitively, this is because with a large value of σ, the model will choose "safer" predictions that represent an average among likely locations, but is unlikely to be very close to the correct one. For our final model, we choose σ=2 as a good compromise.
 
-## TODO
-- Intuition for why this works (do this just above, or further up)
-- Countries that resemble states
-- Appendix
+So why did the KNN approach work? Vo et al [^6] hypothesize that while neural networks are good at capturing features of an image, they are not as good at memorizing locations, since there are simply too many locations in the world for it to learn. They argue that KNN remains the best approach for geolocating images, as it can simply find the most similar images in its database. In other words, a neural network excels at feature extraction, while a KNN excels at instance matching. In our case, the features extracted by our country-prediction, geocell-prediction, and US state-prediction models correspond to how much a given image resembles each country, geocell, and US state, respectively. One could potentially improve on our result by training more nets to extract different features.
+
+## Countries That Resemble US States
+
+Just for fun, we apply our US state-classification model to images from other countries. Because the state-classification model was only trained on the  dataset from Suresh et al [^5], we can examine its output for all images in the dataset we scraped. For some Country X, we take the average prediction of our state-classification model across all images from Country X. The result is a length-50 vector that sums to one showing how much Country X looks like each of the 50 US States. For a given state, we can now find which countries resemble it the most:
+
+| Country | Resemblance to Alaska |
+|-|-|
+| Finland | 38.7% |
+| Norway | 29.2% |
+| Sweden | 16.1% |
+
+We can interpret this result as follows: "for an average image in Finland, our state-classification model is 38.7% confident that it is located in Alaska." Similar interpretations apply for Norway and Sweden. Let's look at the four images from Finland (resp. Norway) that our model was most confident were located in Alaska (the confidence is reported below each image):
+
+![](/images/im_alaska.png)
+
+Indeed, these scenes do look similar to Alaska: they contain mountains, tall pine trees, and generally feel like they come from a northern climate. We do a similar analysis for Pennsylvania:
+
+| Country | Resemblance to Pennsylvania |
+|-|-|
+|Czech Republic|26.1%|
+|Poland|25.0%|
+|Slovakia|24.0%|
+|Austria|22.3%|
+|Serbia|22.2%|
+|Germany|22.0%|
+|Hungary|21.6%|
+|Belgium|21.5%|
+|Macedonia|21.3%|
+|Netherlands|21.2%|
+
+![](/images/im_penn.png)
+
+This time, it looks like the model is focusing on flat green fields with scattered trees. We present results from a few more states for the reader's enjoyment:
+
+| Country | Resemblance to California |
+|-|-|
+|Tunisia|42.1%|
+|Israel|38.0%|
+|Jordan|26.6%|
+|Senegal|22.9%|
+|Chile|21.3%|
+|Kyrgyzstan|20.2%|
+|Australia|19.1%|
+|United Arab Emirates|18.6%|
+|Spain|18.0%|
+|Greece|17.9%|
+
+![](/images/im_cali.png)
+
+| Country | Resemblance to Hawaii |
+|-|-|
+|American Samoa|53.0%|
+|Uganda|47.4%|
+|South Africa|36.1%|
+|Sri Lanka|28.2%|
+|Brazil|28.1%|
+|Philippines|25.9%|
+|Cambodia|25.7%|
+|Portugal|24.0%|
+|Ireland|22.5%|
+|Indonesia|22.3%|
+
+![](/images/im_hawaii.png)
+
+| Country | Resemblance to West Virginia |
+|-|-|
+|Bhutan|32.3%|
+|Slovenia|28.8%|
+|Croatia|23.7%|
+|Albania|23.0%|
+|Serbia|20.7%|
+|Faroe Islands|20.2%|
+|Macedonia|19.9%|
+
+![](/images/im_wv.png)
+
+| Country | Resemblance to Oregon |
+|-|-|
+|Iceland|20.7%|
+|Japan|14.4%|
+|United Kingdom|13.2%|
+|Switzerland|13.2%|
+|New Zealand|13.1%|
+
+![](/images/im_oregon.png)
+
+| Country | Resemblance to Oregon |
+|-|-|
+|Iceland|23.2%|
+|Greenland|18.4%|
+|Germany|14.0%|
+
+![](/images/im_wash.png)
+
+| Country | Resemblance to Texas |
+|-|-|
+|Botswana|28.1%|
+
+![](/images/im_texas.png)
+
+## Footnotes
+
+[^1]: James Hays, Alexei A. Efros. IM2GPS: estimating geographic information from a single image. Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), 2008.
+[^2]: Weyand, Tobias, et al. “PlaNet - Photo Geolocation with Convolutional Neural Networks.” ArXiv:1602.05314 [Cs], vol. 9912, 2016, pp. 37–55. arXiv.org, doi:10.1007/978-3-319-46484-8_3.
+[^3]: Eric Muller-Budack, Kader Pustu-Iren, and Ralph Ewerth. 2018. Geolocation Estimation of Photos using a Hierarchical Model and Scene Classification. In Proceedings of the European Conference on Computer Vision.
+[^4]: A. R. Zamir and M. Shah. Accurate Image Localization Based on Google Maps Street View. In ECCV, 2010.
+[^5]: Suresh, Sudharshan, et al. “DeepGeo: Photo Localization with Deep Neural Network.” ArXiv:1810.03077 [Cs], Oct. 2018. arXiv.org, http://arxiv.org/abs/1810.03077.
+[^6]: Vo, Nam, et al. “Revisiting IM2GPS in the Deep Learning Era.” ArXiv:1705.04838 [Cs], May 2017. arXiv.org, http://arxiv.org/abs/1705.04838.
+
+## Appendix
+
+### Distribution of Dataset Across Countries
+
+### Geocell Classification Error Analysis
