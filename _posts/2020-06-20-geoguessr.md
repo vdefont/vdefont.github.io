@@ -153,10 +153,6 @@ Note that there are three sets of features we are using to compute similarity: c
 
 We experimentally found that the optinmal KNN feature weightings were as follows (we tested in increments of 0.1):
 
-| | Country Logits | Geocell Logits | State Logits |
-|-|-|-|-|
-| US Images| 1.0 | 0.9 | 1.1 |
-| Non-US Images | 1.0 | 1.0 | 0.0 |
 
 Our most important finding here was that we should not use the US state features in our KNN when predicting the location of images that are not in the US (since the corresponding weight was 0). Using these feature weightings, our KNN results on the test set are as follows (in comparison to our earlier methods):
 
