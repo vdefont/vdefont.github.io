@@ -170,5 +170,6 @@ Our most important finding here was that we should not use the US state features
 The KNN method is a clear improvement. We also included results from varying σ: a smaller value corresponds to tighter gaussian filters, and thus a strongest preference for the closest neighbors. In the extreme, σ=0 corresponds to 1 Nearest-Neighbor. Observe the tradeoff between accuracies at different thresholds as we vary σ. At σ=0 the accuracy within 1km is an impressive 2.1%, while the accuracy for higher thresholds is relatively low (being outperformed by our baseline methods). As we increase σ, the accuracy at higher thresholds increases, whereas the accuracy at lower thresholds decreases. Intuitively, this is because with a large value of σ, the model will choose "safer" predictions that represent an average among likely locations, but is unlikely to be very close to the correct one. For our final model, we choose σ=2 as a good compromise.
 
 ## TODO
+- Intuition for why this works (do this just above, or further up)
 - Countries that resemble states
 - Appendix
