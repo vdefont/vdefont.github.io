@@ -143,12 +143,13 @@ $$
 
 After finding the K closest neighbors for a given image, we need to take some sort of weighted average of these K neighbors to predict a location. As described in Vo et al [^6], we do so by plotting a gaussian filter (essentially a 2D bell curve) at each of the K locations. The location with the highest density is our final prediction. Consider this example:
 
-<TODO_MAKE_AND_EXPLAIN_EXAMPLE>
+TODO_MAKE_AND_EXPLAIN_EXAMPLE
 
 In addition to K and M, we must also choose the hyperparameter σ, corresponding to the standard deviation for each gaussian filter. We experimentally chose the values K=20, M=2, and σ=4.
 
 Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not (given that one set of features is US-specific)? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
 
+![](/images/us_thresh.png)
 
 We experimentally found that the optinmal KNN feature weightings were as follows (we tested in increments of 0.1):
 
