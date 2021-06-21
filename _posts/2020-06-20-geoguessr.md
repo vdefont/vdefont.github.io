@@ -149,10 +149,13 @@ In addition to K and M, we must also choose the hyperparameter σ, corresponding
 
 Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not (given that one set of features is US-specific)? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
 
-![](/images/us_thresh.png)
 
 We experimentally found that the optinmal KNN feature weightings were as follows (we tested in increments of 0.1):
 
+| | Country Logits | Geocell Logits | State Logits |
+|-|-|-|-|
+| US Images| 1.0 | 0.9 | 1.1 |
+| Non-US Images | 1.0 | 1.0 | 0.0 |
 
 Our most important finding here was that we should not use the US state features in our KNN when predicting the location of images that are not in the US (since the corresponding weight was 0). Using these feature weightings, our KNN results on the test set are as follows (in comparison to our earlier methods):
 
