@@ -1,7 +1,7 @@
 ---
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
-$content-width: min(100%, 600px);
+$content-width: min(100%, 600dp);
 
 @import "{{ site.theme }}";
 
