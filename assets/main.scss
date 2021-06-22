@@ -1,7 +1,7 @@
 ---
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
-$content-width: min(100%, 1000px);
+$content-width: min(100%, 888px);
 
 @import "{{ site.theme }}";
 
@@ -61,5 +61,5 @@ $content-width: min(100%, 1000px);
         padding-top:0 !important;
 }
 
-.codecell table { width: max-content; }
+.codecell table { width: max(auto,600px); }
 
