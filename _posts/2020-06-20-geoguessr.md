@@ -18,8 +18,8 @@ For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbo
 4. [Location Prediction](#location-prediction)
 5. [Countries That Resemble US States](#countries-that-resemble-us-states)
 6. [Conclusion](#conclusion)
-7. [Footnotes](#footnotes)
-8. [Appendix](#appendix)
+7. [Appendix](#appendix)
+8. [Footnotes](#footnotes)
 
 ## The Dataset
 
@@ -274,15 +274,6 @@ This time, it looks like the model is focusing on flat green fields with scatter
 
 ![](/images/im_texas.png)
 
-## Footnotes
-
-[^1]: James Hays, Alexei A. Efros. IM2GPS: estimating geographic information from a single image. Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), 2008.
-[^2]: Weyand, Tobias, et al. “PlaNet - Photo Geolocation with Convolutional Neural Networks.” ArXiv:1602.05314 [Cs], vol. 9912, 2016, pp. 37–55. arXiv.org, doi:10.1007/978-3-319-46484-8_3.
-[^3]: Eric Muller-Budack, Kader Pustu-Iren, and Ralph Ewerth. 2018. Geolocation Estimation of Photos using a Hierarchical Model and Scene Classification. In Proceedings of the European Conference on Computer Vision.
-[^4]: A. R. Zamir and M. Shah. Accurate Image Localization Based on Google Maps Street View. In ECCV, 2010.
-[^5]: Suresh, Sudharshan, et al. “DeepGeo: Photo Localization with Deep Neural Network.” ArXiv:1810.03077 [Cs], Oct. 2018. arXiv.org, http://arxiv.org/abs/1810.03077.
-[^6]: Vo, Nam, et al. “Revisiting IM2GPS in the Deep Learning Era.” ArXiv:1705.04838 [Cs], May 2017. arXiv.org, http://arxiv.org/abs/1705.04838.
-
 ## Appendix
 
 ### Distribution of Dataset Across Countries
@@ -337,3 +328,12 @@ This geocell corresponds to central Californa. It is very small, only containing
 ![](/images/gc_miss_poor_design.png)
 
 This geocell is also quite small, only containing 21 images in in the validation and test sets. As before, the model errs in favor of larger geocells. This geocell also straddles two countries separated by a large body of water. This not only makes it harder for the model to classify it correctly, but it also makes geolocation harder, as the two clusters in the geocell are quite far apart. A smarter geocell creation method may be able to mitigate both of the problems we've noted by creating equally-sized geocells (no small ones), and by not creating geocells that encompass different countries.
+
+## Footnotes
+
+[^1]: James Hays, Alexei A. Efros. IM2GPS: estimating geographic information from a single image. Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), 2008.
+[^2]: Weyand, Tobias, et al. “PlaNet - Photo Geolocation with Convolutional Neural Networks.” ArXiv:1602.05314 [Cs], vol. 9912, 2016, pp. 37–55. arXiv.org, doi:10.1007/978-3-319-46484-8_3.
+[^3]: Eric Muller-Budack, Kader Pustu-Iren, and Ralph Ewerth. 2018. Geolocation Estimation of Photos using a Hierarchical Model and Scene Classification. In Proceedings of the European Conference on Computer Vision.
+[^4]: A. R. Zamir and M. Shah. Accurate Image Localization Based on Google Maps Street View. In ECCV, 2010.
+[^5]: Suresh, Sudharshan, et al. “DeepGeo: Photo Localization with Deep Neural Network.” ArXiv:1810.03077 [Cs], Oct. 2018. arXiv.org, http://arxiv.org/abs/1810.03077.
+[^6]: Vo, Nam, et al. “Revisiting IM2GPS in the Deep Learning Era.” ArXiv:1705.04838 [Cs], May 2017. arXiv.org, http://arxiv.org/abs/1705.04838.
