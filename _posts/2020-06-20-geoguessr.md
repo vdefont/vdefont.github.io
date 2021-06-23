@@ -27,9 +27,9 @@ There previously existed no dataset of Street View images uniformly sampled from
 
 There do exist two datasets solely consisting of Street View images, yet with more narrow scope. Zamir and Shah [^4] scrape 100,000 Street View images from Pittsburgh, PA and Orlando, FL. Suresh et al [^5] scrape 600,000 Street View images from across the United States. Although this latter dataset is also not quite broad enough in scope, we will still use it in this work to improve our geolocation accuracy for images taken in the US.
 
-The team at GeoGuessr provided us with a list of 100,000 locations uniformly distributed around the world (see the appendix for an analysis of how uniform the dataset is). We removed duplicate images and invalid locations, and discarded data from countries with fewer than fifty examples. This left us with 97,068 unique locations. For each location, we scraped an image from Google's Street View API, choosing a random direction to look (ranging between north, south, east, and west).
+The team at GeoGuessr provided us with a list of 100,000 locations uniformly distributed around the world (see the appendix for an analysis of how uniform the distribution is). We removed duplicate images and invalid locations, and discarded data from countries with fewer than fifty examples. This left us with 97,068 unique locations. For each location, we scraped an image from Google's Street View API, choosing a random direction to look (ranging between north, south, east, and west).
 
-We split our dataset into training, validation, and test sets of size 77,654, 9,707, and 9,707 respectively (roughly an 80% / 10% / 10% split). The dataset is available [here](https://drive.google.com/file/d/1BGolQzYYaU1oSx0CdFwntCOPQ8nyqaPE/view?usp=sharing).
+We split our dataset into training, validation, and test sets of size 77,654, 9,707, and 9,707 respectively (roughly an 80% / 10% / 10% split).
 
 ## Country Prediction
 
@@ -44,11 +44,11 @@ The naive model always predicts the countries that appear most often in the trai
 
 ![](/images/country_acc.png)
 
-This figure uses accuracy computed across both the validation and test sets (our accuracy was very similar for both as we did not tune extensively). We only include countries with at least 100 images across the validation and test set, as the accuracy would be subject to too much variance for countries with very few images. The accuracy is quite good for most countries, but is poor for a few of them. Let's plot a confusion matrix to find out why:
+This figure shows accuracy computed across both the validation and test sets (our accuracy was very similar for both as we did not tune extensively). We only include countries with at least 100 images across the validation and test set, as the accuracy would be subject to too much variance for countries with very few images. The accuracy is quite high for most countries, but is low for a few of them. Let's plot a confusion matrix to find out why:
 
 ![](/images/country_recall.png)
 
-It makes sense that images from Ireland are often misclassified as being in the UK. The two countries look quite similar, so the model errs on the side of predicting the UK since there are many more images taken there. The other four countries shown also follow this pattern, getting confused for countries that look similar to them, and which are often more populous and thus better-represented in our dataset.
+Each row shows all images from a given country, and the columns show the countries our model predicted for those images. It makes sense that images from Ireland are often misclassified as being in the UK. The two countries look quite similar, so the model errs on the side of predicting the UK since our dataset contains more images from the UK than from Ireland. The other four countries shown also follow this pattern, getting confused for countries that look similar to them, and which are often more populous and thus better-represented in our dataset.
 
 So far, we have only considered recall, but precision is also a useful measure of accuracy. Let's examine the precision and recall for each country:
 
@@ -66,7 +66,7 @@ Observe that some countries have a lower precision than recall, such as the Neth
 
 We use the dataset from Suresh et al [^5], which contains 600,000 images annotated by state. The authors created this dataset by collecting 150,000 unique locations evenly distributed across all 50 states (so each state has 3,000 locations). For each location, they scraped four images: one looking in each cardinal direction (north, east, south, and west). The authors split the data into 500,000 training images and 100,000 test images. They built a model that took a set of four images as input, and predicted the state.
 
-To build our model, we fine-tune a pre-trained resnet101 as we did for our country model. We experimentally found that our accuracy was higher when building a single-image model and averaging over the results for the four cardinal directions, as opposed to building a model that takes all four images as input as the authors did. For a fair comparison, we use the same train / test split as the authors. We further split the training set into 450,000 training images and 50,000 validation images. Here are the results:
+To build our model, we fine-tune a pre-trained resnet101 as we did for our country model. We experimentally found that our accuracy was higher when we built a model that takes one image as input, and made predictions by averaging the model's output over the four images corresponding to each location (as opposed to building a model that takes all four images as input as the authors did). For a fair comparison, we use the same train / test split as the authors. We further split the training set into 450,000 training images and 50,000 validation images. Here are the results:
 
 | | Top-1 | Top-3 | Top-5 |
 |-|-|-|-|
@@ -98,7 +98,7 @@ One intuitive explanation for a state having lower precision than recall is that
 
 ## Location Prediction
 
-We now have good classifiers for countries and US statesss, but we would also like to predict the precise location of an image. As a naive baseline, we can predict an image's country, and use that country's center as our location prediction. We compute a country's center by taking the median latitude and longitude across all locations for that country in our training set. Following the convention of [^2], [^3], and [^6], we report the fraction of test set images successfully localized within 1km (street), 25km (city), 200km (region), 750km (country), and 2500km (continent):
+We now have good classifiers for countries and US states, but we would also like to predict the precise location of an image. As a naive baseline, we can predict an image's country, and use that country's center as our location prediction. We compute a country's center by taking the median latitude and longitude across all locations for that country in our training set. Following the convention of [^2], [^3], and [^6], we report the fraction of test set images successfully localized within 1km (street), 25km (city), 200km (region), 750km (country), and 2500km (continent):
 
 | Radius | Fraction of Images Successfully Localized Within Given Radius |
 |-|-|
@@ -108,7 +108,7 @@ We now have good classifiers for countries and US statesss, but we would also li
 | 750km (466mi) | 53.1% |
 | 2500km (1553mi) | 83.4% |
 
-We would like to do better. Some countries like the US are so large that predicting the center is not a good approach. Intuitively, we should get better results by subdividing the world into pieces that are smaller than countries, and using the center of those small pieces as our predictions. The authors of PlaNet [^2] do exactly this, and refer to these small pieces as "geocells." The authors divided the world map into 26,263 geocells, each containing about 2,500 to 10,000 images. Unfortunately, our dataset is much smaller than theirs (97k vs 137m), so we must use a smaller number of larger geocells in order to have a sufficient number of training examples for each geocell.
+This is a good start, but we would like to do better. Some countries like the US are so large that predicting the center is not a good approach. Intuitively, we should get better results by subdividing the world into pieces that are smaller than countries, and using the center of those small pieces as our predictions. The authors of PlaNet [^2] do exactly this, and refer to these small pieces as "geocells." The authors divided the world map into 26,263 geocells, each containing about 2,500 to 10,000 images. Unfortunately, our dataset is much smaller than theirs (97k vs 137m), so we must use a smaller number of larger geocells in order to have a sufficient number of training examples for each geocell.
 
 To create the geocells, we start by defining the world as one big geocell. Then, we recursively split geocells in half while they contain at least 600 images. The splits are somewhat random, but they favor splitting along the longer edge, as well as ensuring that the two resulting geocells contain a similar number of examples. Finally, we discard geocells with less than 50 examples. The result is 275 geocells containing an average of 353 examples each:
 
@@ -141,26 +141,26 @@ $$
 d(v_1, v_2) = \frac{1}{ ( || v_1 - v_2 ||_2 ) ^M}
 $$
 
-After finding the K closest neighbors for a given image, we need to take some sort of weighted average of these K neighbors to predict a location. As described in Vo et al [^6], we do so by plotting a gaussian filter (essentially a 2D bell curve) at each of the K locations. We scale each gaussian filter by that location's similarity score, as defined above. The location with the highest density is our final prediction. Consider this example:
+After finding the K closest neighbors for a given image, we need to take some sort of weighted average of these K neighbors to predict a single location. As described in Vo et al [^6], we do so by plotting a gaussian filter (essentially a 2D bell curve) at each of the K locations. We scale each gaussian filter by that location's similarity score, as defined above. The point with the highest density is our final prediction. Consider this example:
 
 ![](/images/gaussian_example_2.png)
 
-In this hypothetical scenario, we set K=5 and observe that one of the nearest neighbors is near Sacramento, two are near Las Vegas, and two are near Los Angeles. The locations in Sacramento and Las Vegas all have a high similarity score, whereas the two locations in Los Angeles have a lower similarity score, as indicated by the lesser intensity of those gaussian filters. The location with highest density (visually, the brightest point) turns out to be at the intersection of the two gaussian filters in Las Vegas. Therefore, this would be our predicted location.
+In this hypothetical scenario, we set K=5 and observe that one of the nearest neighbors is near Sacramento, two are near Las Vegas, and two are near Los Angeles. The locations in Sacramento and Las Vegas all have a high similarity score, whereas the two locations in Los Angeles have a lower similarity score, as indicated by the lesser intensity of those gaussian filters. The point with highest density (visually, the brightest point) turns out to be at the intersection of the two gaussian filters in Las Vegas. Therefore, this would be our predicted location.
 
 In addition to K and M, we must also choose the hyperparameter σ, corresponding to the standard deviation for each gaussian filter. We experimentally chose the values K=20, M=2, and σ=4.
 
-Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not (given that one set of features is US-specific)? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
+Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
 
 ![](/images/us_thresh.png)
 
-We experimentally found that the optinmal KNN feature weightings were as follows (we tested in increments of 0.1):
+We experimentally found that the optimal KNN feature weightings were as follows (we tested in increments of 0.1):
 
 | | Country Logits | Geocell Logits | State Logits |
 |-|-|-|-|
 | US Images| 1.0 | 0.9 | 1.1 |
 | Non-US Images | 1.0 | 1.0 | 0.0 |
 
-Our most important finding here was that we should not use the US state features in our KNN when predicting the location of images that are not in the US (since the corresponding weight was 0). Using these feature weightings, our KNN results on the test set are as follows (in comparison to our earlier methods):
+Our most important finding here was that we should not use the US state features in our KNN when predicting the location of images that are not in the US (observe that the corresponding weight was 0.0). Using these feature weightings, our KNN results on the test set are as follows (in comparison to our earlier methods):
 
 | Method | 1km (0.6mi) | 25km (16mi) | 200km (124mi) | 750km (466mi) | 2500km (1553mi) |
 |-|-|-|-|-|-|
@@ -171,13 +171,13 @@ Our most important finding here was that we should not use the US state features
 | KNN (σ=2) | 0.32% | 6.39% | **38.7%** | 70.8% | 87.4% |
 | KNN (σ=4) | 0.12% | 4.06% | 37.3% | **72.1%** | **87.5%** |
 
-The KNN method is a clear improvement. We also included results from varying σ: a smaller value corresponds to tighter gaussian filters, and thus a strongest preference for the closest neighbors. In the extreme, σ=0 corresponds to 1 Nearest-Neighbor. Observe the tradeoff between accuracies at different thresholds as we vary σ. At σ=0 the accuracy within 1km is an impressive 2.1%, while the accuracy for higher thresholds is relatively low (being outperformed by our baseline methods). As we increase σ, the accuracy at higher thresholds increases, whereas the accuracy at lower thresholds decreases. Intuitively, this is because with a large value of σ, the model will choose "safer" predictions that represent an average among likely locations, but is unlikely to be very close to the correct one. For our final model, we choose σ=2 as a good compromise.
+The KNN method is a clear improvement. We also included results for varying σ: a smaller value corresponds to tighter gaussian filters, and thus a stronger preference for the closest neighbors. In the extreme, σ=0 corresponds to 1 Nearest-Neighbor. Observe the tradeoff between accuracies at different thresholds as we vary σ. At σ=0 the accuracy within 1km is an impressive 2.1%, while the accuracy for higher thresholds is relatively low (being outperformed by our baseline methods). As we increase σ, the accuracy at higher thresholds increases, whereas the accuracy at lower thresholds decreases. Intuitively, this is because with a large value of σ, the model will choose a "safer" prediction that represents an average among likely locations, but is unlikely to be very close to the correct one. For our final model, we choose σ=2 as a good compromise.
 
-So why did the KNN approach work? Vo et al [^6] hypothesize that while neural networks are good at capturing features of an image, they are not as good at memorizing locations, since there are simply too many locations in the world for it to learn. They argue that KNN remains the best approach for geolocating images, as it can simply find the most similar images in its database. In other words, a neural network excels at feature extraction, while a KNN excels at instance matching. In our case, the features extracted by our country-prediction, geocell-prediction, and US state-prediction models correspond to how much a given image resembles each country, geocell, and US state, respectively. One could potentially improve on our result by training more nets to extract different features.
+So why did the KNN approach work? Vo et al [^6] hypothesize that while neural networks are good at capturing features of an image, they are not as good at memorizing locations, since there are simply too many locations in the world for it to learn. They argue that KNN remains the best approach for geolocating images, as it can simply find the most similar images in its database. In other words, a neural network excels at feature extraction, while a KNN excels at instance matching. In our case, the features extracted by our country-prediction, geocell-prediction, and US state-prediction models correspond to how much a given image resembles each country, geocell, and US state, respectively. One could potentially improve on our result by training more nets to extract additional features.
 
 ## Countries That Resemble US States
 
-Just for fun, we apply our US state-classification model to images from other countries. Because the state-classification model was only trained on the  dataset from Suresh et al [^5], we can examine its output for all images in the dataset we scraped. For some Country X, we take the average prediction of our state-classification model across all images from Country X. The result is a length-50 vector that sums to one showing how much Country X looks like each of the 50 US States. For a given state, we can now find which countries resemble it the most:
+Just for fun, we apply our US state-classification model to images from other countries. Because the state-classification model was only trained on the  dataset from Suresh et al [^5], we can safely examine its output for all images in the dataset we scraped. We do this as follows: for a given Country X, we take the average prediction of our state-classification model across all images from Country X. The result is a length-50 vector that sums to one showing how much Country X looks like each of the 50 US States. For a given state, we can now find which countries resemble it the most:
 
 | Country | Resemblance to Alaska |
 |-|-|
@@ -303,7 +303,7 @@ The team at GeoGuessr provided us with a list of 100,000 locations, from which w
 |Romania|19.71|1163|16.9|
 |New Zealand|4.69|1139|4.1|
 
-The "Pop Per Datum" column is a ratio computed as `(Country X population) / (number of dataset entries in Country X) * 1000`. A low number means that the country is overrepresented in the dataset, whereas a high number means that it is overrepresented. In general, this ratio is fairly consistent.
+The "Pop Per Datum" column is a ratio computed as `(Country X population) / (number of dataset entries in Country X) * 1000`. A low number means that the country is overrepresented in the dataset, whereas a high number means that it is underrepresented. In general, this ratio is fairly consistent.
 
 There is some imbalance, but it generally reflects the amount of Street View coverage that exists in a given country. For example, countries like Brazil which have sparse Street View coverage are underrepresented in our dataset, whereas countries like Finland with comprehensive Street View coverage are overrepresented. We chose not to implement class weightings to fix this imbalance for two reasons: first, the imbalance is representative of the actual distribution of images one would see while playing GeoGuessr, and second, because the imbalance is generally not too severe.
 
