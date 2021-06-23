@@ -3,12 +3,12 @@
 GeoGuessr is a game where players must determine the location of Google Street View images randomly selected from around the world. It is a challenging task, and players scour for clues in the landscape, signage, inhabitants, road markings, and the position of the sun in the sky. To date, no one has built a model to solve this task.
 
 Our contributions are as follows:
-- A novel dataset consisting of 97,068 Street View images uniformly sampled from 87 countries (available [here](https://drive.google.com/file/d/1BGolQzYYaU1oSx0CdFwntCOPQ8nyqaPE/view?usp=sharing))
+- A novel dataset consisting of 97,068 Street View images uniformly sampled from 87 countries
 - A model that predicts an image's country with 75% accuracy (94% top-5 accuracy)
 - A model that predicts the US State of an image with 64% accuracy (90% top-5 accuracy)
 - A model that correctly predicts an image's location within 25km (16 miles) in 9% of cases, within 200km (124 miles) in 39% of cases, or within 750km (466 miles) in 72% of cases
 
-For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbot.com/) (be patient, it can take a minute to start up). Our code is avaiable at [github.com/vdefont/geoguessr](https://github.com/vdefont/geoguessr).
+For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbot.com/) (be patient, it can take a minute to start up). The data and our code is avaiable at [github.com/vdefont/geoguessr](https://github.com/vdefont/geoguessr).
 
 ## Table of Contents
 
@@ -23,9 +23,9 @@ For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbo
 
 ## The Dataset
 
-There previously existed no dataset of Street View images uniformly sampled from around the world. There do exist large-scale worldwide image datasets, as in Im2GPS [^1], PlaNet [^2], and Müller-Budack et al [^3]. Yet these datasets, while quite large (with respective sizes of 6m, 100m, and 126m), are all comprised of images from Flickr and other photo-sharing sites. This makes them unsuitable to our task for two reasons: first, most of the dataset is not street view images, and second, the dataset is biased towards places where people take many pictures, such as tourist attractions and big cities. We would instead like a dataset that is more uniformly distributed across the globe, including not just famous cities but also more obscure or mundane locations.
+There previously existed no dataset of Street View images uniformly sampled from around the world. There do exist large-scale worldwide image datasets, as in Im2GPS [^1], PlaNet [^2], and Müller-Budack et al [^3]. Yet these datasets, while quite large (with respective sizes of 6m, 100m, and 126m), are all comprised of images from Flickr and other photo-sharing sites. This makes them unsuitable for our task for two reasons: first, most of the dataset is not street view images, and second, the dataset is biased towards places where people take many pictures, such as tourist attractions and big cities. We would instead like a dataset that is more uniformly distributed across the globe, including not just famous cities but also more obscure or mundane locations.
 
-There do exist two datasets solely consisting of Street View images, yet with more narrow scope. Zamir and Shah [^4] scrape 100,000 Street View images from Pittsburgh, PA and Orlando, FL. Suresh et al [^5] scrape 600,000 Street View images from across the United States. Although this latter dataset is still not quite broad enough in scope, we will still use it in this work to improve our geolocation accuracy for images taken in the US.
+There do exist two datasets solely consisting of Street View images, yet with more narrow scope. Zamir and Shah [^4] scrape 100,000 Street View images from Pittsburgh, PA and Orlando, FL. Suresh et al [^5] scrape 600,000 Street View images from across the United States. Although this latter dataset is also not quite broad enough in scope, we will still use it in this work to improve our geolocation accuracy for images taken in the US.
 
 The team at GeoGuessr provided us with a list of 100,000 locations uniformly distributed around the world (see the appendix for an analysis of how uniform the dataset is). We removed duplicate images and invalid locations, and discarded data from countries with fewer than fifty examples. This left us with 97,068 unique locations. For each location, we scraped an image from Google's Street View API, choosing a random direction to look (ranging between north, south, east, and west).
 
