@@ -135,15 +135,17 @@ We can now predict an image's location by predicting its geocell, and using the 
 | Country Center | 0.07% | 2.5% | 18.7% | 53.1% | 83.4% |
 | Geocell Center | 0.10% | 4.7% | 31.0% | 67.3% | 85.5% |
 
-This is a clear improvement, especially for the 25-250km ranges. However, we'd still like to do better. We do so by using a KNN as in Vo et al [^6]. To compute the vector representation of an image, we run it through each of our three models (country, geocell, US state), and concanente the output logits into a length-412 vector (87 countries + 275 geocells + 50 states). We can then perform KNN using these vectors. We compute the distance between two of these vectors as follows. Increasing M will increase the model's preference for the closest neighbors.
+This is a clear improvement, especially for the 25-250km ranges. However, we'd still like to do better. We do so by using a KNN as in Vo et al [^6]. To compute the vector representation of an image, we run it through each of our three models (country, geocell, US state), and concanente the output logits into a length-412 vector (87 countries + 275 geocells + 50 states). We can then perform KNN using these vectors. We compute the similarity score between two vectors as follows. Increasing M will increase the model's preference for the closest neighbors.
 
 $$
 d(v_1, v_2) = \frac{1}{ ( || v_1 - v_2 ||_2 ) ^M}
 $$
 
-After finding the K closest neighbors for a given image, we need to take some sort of weighted average of these K neighbors to predict a location. As described in Vo et al [^6], we do so by plotting a gaussian filter (essentially a 2D bell curve) at each of the K locations. The location with the highest density is our final prediction. Consider this example:
+After finding the K closest neighbors for a given image, we need to take some sort of weighted average of these K neighbors to predict a location. As described in Vo et al [^6], we do so by plotting a gaussian filter (essentially a 2D bell curve) at each of the K locations. We scale each gaussian filter by that location's similarity score, as defined above. The location with the highest density is our final prediction. Consider this example:
 
-TODO_MAKE_AND_EXPLAIN_EXAMPLE
+![](/images/gaussian_example_2.png)
+
+In this hypothetical scenario, we set K=5 and observe that one of the nearest neighbors is near Sacramento, two are near Las Vegas, and two are near Los Angeles. The locations in Sacramento and Las Vegas all have a high similarity score, whereas the two locations in Los Angeles have a lower similarity score, as indicated by the lesser intensity of those gaussian filters. The location with highest density (visually, the brightest point) turns out to be at the intersection of the two gaussian filters in Las Vegas. Therefore, this would be our predicted location.
 
 In addition to K and M, we must also choose the hyperparameter σ, corresponding to the standard deviation for each gaussian filter. We experimentally chose the values K=20, M=2, and σ=4.
 
