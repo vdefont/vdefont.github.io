@@ -42,11 +42,11 @@ We fine-tune a pre-trained resnet101, using a head with one hidden layer. We app
 
 The naive model always predicts the countries that appear most often in the training set (in order, these are the US, France, Russia, Japan, and the UK). The accuracy per country is as follows:
 
-![](/images/country_acc.png)
+![](/images/country_acc_2.png)
 
 This figure shows accuracy computed across both the validation and test sets (our accuracy was very similar for both as we did not tune extensively). We only include countries with at least 100 images across the validation and test set, as the accuracy would be subject to too much variance for countries with very few images. The accuracy is quite high for most countries, but is low for a few of them. Let's plot a confusion matrix to find out why:
 
-![](/images/country_recall.png)
+![](/images/country_recall_2.png)
 
 Each row shows all images from a given country, and the columns show the countries our model predicted for those images. It makes sense that images from Ireland are often misclassified as being in the UK. The two countries look quite similar, so the model errs on the side of predicting the UK since our dataset contains more images from the UK than from Ireland. The other four countries shown also follow this pattern, getting confused for countries that look similar to them, and which are often more populous and thus better-represented in our dataset.
 
@@ -60,7 +60,7 @@ In this context, we find it useful to think of precision and recall as follows:
 
 Observe that some countries have a lower precision than recall, such as the Netherlands and Indonesia. Let's plot a confusion matrix for those countries, along with a couple other countries that have a low recall in absolute terms. Note that each row contains all images *predicted* to be in Country X, and each column shows where those images actually were.
 
-![](/images/country_precision.png)
+![](/images/country_precision_2.png)
 
 ## US State Prediction
 
@@ -76,11 +76,11 @@ To build our model, we fine-tune a pre-trained resnet101 as we did for our count
 
 Note that we also report the results of our model when applied to individual images (as opposed to averaging over the four images for each location), as this corresponds to how we will use the model in the rest of this work. From this point forward, all reported accuracy statistics will be computed using the individual-image method. We examine the accuracy for each state:
 
-![](/images/us_acc.png)
+![](/images/us_acc_2.png)
 
 As before, we build a confusion matrix to examine patterns in the model's errors, focusing on states with low accuracy such as Alabama, Michigan, and Pennsylvania:
 
-![](/images/state_recall.png)
+![](/images/state_recall_2.png)
 
 We observe that states are generally confused with other states in their geographic vicinity. For example, Alabama is confused with Mississippi, Tennessee, Arkansas, and Georgia, whereas New Hampshire is confused with Vermont, Massachusetts, Maine, and Connecticut.
 
@@ -92,7 +92,7 @@ As before, we examine precision and recall for each state. Keep in mind the foll
 
 There are many states with lower recall than precision. Because all states are equally represented in the dataset, class imbalance cannot explain this (as it could in the case of the countries dataset). We examine the confusion matrix for precision. As before, each row contains all images predicted to be in State X, whereas the columns show where those images actually were.
 
-![](/images/state_precision.png)
+![](/images/state_precision_2.png)
 
 One intuitive explanation for a state having lower precision than recall is that it has become an archetype for a region. For example, we see that Massachusetts has become an archetype for the northeast, with images in states like New Hampshire and Rhode Island often getting classified as Massachusetts. Indeed, New Hampshire and Rhode Island both have much lower recall than precision, in part due to their images getting misclassified as Massachusetts. Similarly, Illinois is an archetype for the midwest, and Wyoming is an archetype for the rural west.
 
@@ -151,7 +151,7 @@ In addition to K and M, we must also choose the hyperparameter σ, corresponding
 
 Note that there are three sets of features we are using to compute similarity: country logits, geocell logits, and US state logits. Does it make sense to weigh them all equally? Should we have different weightings for images that are in the US versus images that are not? To find out, we first divide our images into two groups: those that are in the US, and those that are not. In order for this operation to be reproducible on unlabeled images, we use our country-prediction model's output to decide if a given image is in the US, using a threshold of 90% (eg. we say an image is in the US when our model is at least 90% confident of this). We chose this threshold based off our model's confidence distribution:
 
-![](/images/us_thresh.png)
+![](/images/us_thresh_2.png)
 
 We experimentally found that the optimal KNN feature weightings were as follows (we tested in increments of 0.1):
 
@@ -187,7 +187,7 @@ Just for fun, we apply our US state-classification model to images from other co
 
 We can interpret this result as follows: "for an average image in Finland, our state-classification model is 38.7% confident that it is located in Alaska." Similar interpretations apply for Norway and Sweden. Let's look at the four images from Finland (resp. Norway) that our model was most confident were located in Alaska (the confidence is reported below each image):
 
-![](/images/im_alaska.png)
+![](/images/im_alaska_2.png)
 
 Indeed, these scenes do look similar to Alaska: they contain mountains, tall pine trees, and generally feel like they come from a northern climate. We do a similar analysis for Pennsylvania:
 
@@ -204,7 +204,7 @@ Indeed, these scenes do look similar to Alaska: they contain mountains, tall pin
 |Macedonia|21.3%|
 |Netherlands|21.2%|
 
-![](/images/im_penn.png)
+![](/images/im_penn_2.png)
 
 This time, it looks like the model is focusing on flat green fields with scattered trees. We present results from a few more states for the reader's enjoyment:
 
@@ -221,7 +221,7 @@ This time, it looks like the model is focusing on flat green fields with scatter
 |Spain|18.0%|
 |Greece|17.9%|
 
-![](/images/im_cali.png)
+![](/images/im_cali_2.png)
 
 | Country | Resemblance to Hawaii |
 |-|-|
@@ -236,7 +236,7 @@ This time, it looks like the model is focusing on flat green fields with scatter
 |Ireland|22.5%|
 |Indonesia|22.3%|
 
-![](/images/im_hawaii.png)
+![](/images/im_hawaii_2.png)
 
 | Country | Resemblance to West Virginia |
 |-|-|
@@ -248,7 +248,7 @@ This time, it looks like the model is focusing on flat green fields with scatter
 |Faroe Islands|20.2%|
 |Macedonia|19.9%|
 
-![](/images/im_wv.png)
+![](/images/im_wv_2.png)
 
 | Country | Resemblance to Oregon |
 |-|-|
@@ -258,7 +258,7 @@ This time, it looks like the model is focusing on flat green fields with scatter
 |Switzerland|13.2%|
 |New Zealand|13.1%|
 
-![](/images/im_oregon.png)
+![](/images/im_oregon_2.png)
 
 | Country | Resemblance to Oregon |
 |-|-|
@@ -266,13 +266,13 @@ This time, it looks like the model is focusing on flat green fields with scatter
 |Greenland|18.4%|
 |Germany|14.0%|
 
-![](/images/im_wash.png)
+![](/images/im_wash_2.png)
 
 | Country | Resemblance to Texas |
 |-|-|
 |Botswana|28.1%|
 
-![](/images/im_texas.png)
+![](/images/im_texas_2.png)
 
 ## Appendix
 
