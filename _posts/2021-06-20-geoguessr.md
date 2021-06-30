@@ -1,6 +1,10 @@
 # GeoGuessrBot: Predicting the Location of Any Street View Image
 
-GeoGuessr is a game where players must determine the location of Google Street View images randomly selected from around the world. It is a challenging task, and players scour for clues in the landscape, signage, inhabitants, road markings, and the position of the sun in the sky. To date, no one has built a model to solve this task.
+Which countries are the images below from? Take a moment to think about it. When you are ready, compare your guesses to the solutions (the upside-down caption beneath the images).
+
+![](/images/random_imgs_2.png)
+
+Predicting the location of Street View images is a fun and difficult task. Online games such as [GeoGuessr](http://geoguessr.com/) challenge players to do just this. Players scour for clues in the landscape, signage, inhabitants, road markings, and the position of the sun in the sky. To date, no one has built a model to solve this task. A model that can accurately predict the location of a Street View image would also have useful applications. It could help law enforcement determine the location of photos. It could add metadata to images, creating extra features that could be helpful for solving other tasks.
 
 Our contributions are as follows:
 - A novel dataset consisting of 97,068 Street View images uniformly sampled from 87 countries
@@ -8,7 +12,7 @@ Our contributions are as follows:
 - A model that predicts the US State of an image with 64% accuracy (90% top-5 accuracy)
 - A model that correctly predicts an image's location within 25km (16 miles) in 9% of cases, within 200km (124 miles) in 39% of cases, or within 750km (466 miles) in 72% of cases
 
-For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbot.com/) (be patient, it can take a minute to start up). The data and our code is avaiable at [github.com/vdefont/geoguessr](https://github.com/vdefont/geoguessr).
+For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbot.com/). The data and our code is avaiable at [github.com/vdefont/geoguessr](https://github.com/vdefont/geoguessr).
 
 ## Table of Contents
 
@@ -17,9 +21,8 @@ For a live demo of all three models, visit [GeoGuessrBot.com](http://geoguessrbo
 3. [US State Prediction](#us-state-prediction)
 4. [Location Prediction](#location-prediction)
 5. [Countries That Resemble US States](#countries-that-resemble-us-states)
-6. [Conclusion](#conclusion)
-7. [Appendix](#appendix)
-8. [Footnotes](#footnotes)
+6. [Appendix](#appendix)
+7. [Footnotes](#footnotes)
 
 ## The Dataset
 
