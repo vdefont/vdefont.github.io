@@ -1,6 +1,6 @@
 # About
 
-I studied mathematics and computer science at Pomona College, graduating in 2019. I am currently a software engineer at Facebook. I've become quite interested in machine learning, and spend much of my free time studing ML and working on projects.
+I studied mathematics and computer science at Pomona College, graduating in 2019. I am currently a software engineer at Facebook. I like to expand my skill set outside of work by learning new topics and working on projects.
 
 ![](/images/bust_small.png)
 
